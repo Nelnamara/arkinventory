@@ -35,7 +35,7 @@ function AceEvent.events:OnUsed(target, eventname)
 		-- RegisterEvent blocked (tainted call stack in Midnight 12.x); defer to next frame.
 		C_Timer.After(0, function()
 			if not AceEvent.frame:IsEventRegistered(eventname) then
-				AceEvent.frame:RegisterEvent(eventname)
+				pcall(function() AceEvent.frame:RegisterEvent(eventname) end)
 			end
 		end)
 	end
