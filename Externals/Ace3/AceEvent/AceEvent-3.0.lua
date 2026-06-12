@@ -30,15 +30,14 @@ if not AceEvent.events then
 end
 
 function AceEvent.events:OnUsed(target, eventname)
-	local ok = pcall(function() AceEvent.frame:RegisterEvent(eventname) end)
-	if not ok then
-		-- RegisterEvent blocked (tainted call stack in Midnight 12.x); defer to next frame.
-		C_Timer.After(0, function()
-			if not AceEvent.frame:IsEventRegistered(eventname) then
-				pcall(function() AceEvent.frame:RegisterEvent(eventname) end)
-			end
-		end)
-	end
+	-- Always defer to the next frame so RegisterEvent never runs in a tainted
+	-- call stack (Midnight 12.x: ADDON_ACTION_FORBIDDEN cascade if called
+	-- synchronously during BlizzardAPIHook or inside ADDON_ACTION_FORBIDDEN dispatch).
+	C_Timer.After(0, function()
+		if not AceEvent.frame:IsEventRegistered(eventname) then
+			pcall(function() AceEvent.frame:RegisterEvent(eventname) end)
+		end
+	end)
 end
 
 function AceEvent.events:OnUnused(target, eventname)
